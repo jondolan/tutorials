@@ -4,7 +4,7 @@ function quadrature_plotter()
     thecleanerupper = onCleanup(@closeArduino);
     
     % Start the Arduino serial port
-    Arduino = serial('COM3', 'BaudRate', 115200);
+    Arduino = serial('COM7', 'BaudRate', 115200);
     
     % go until control-c
     while 1
@@ -34,9 +34,9 @@ function quadrature_plotter()
         period = str2num(fgetl(Arduino));
         
         % show the setpoint changing by displaying some time before t=0
-        t = -time/2:period:time;
-        target_f = target .* (t > 0); % logical masking to show the setpoint
-        plot(t, target_f); % plot the setpoint
+        t_neg = -time/2:period:time;
+        target_f = target .* (t_neg > 0); % logical masking to show the setpoint
+        plot(t_neg, target_f); % plot the setpoint
         
         % reset t for the data collection, only from t=0 onwards matters
         t = 0:period:time;
@@ -52,6 +52,8 @@ function quadrature_plotter()
             
             % split the line by the comma in "output,position"
             line = split(strtrim(line), ',');
+            
+            line
             
             % place the values in the vector
             output(1,x) = str2num(line{1,1});
@@ -73,8 +75,7 @@ function quadrature_plotter()
         subplot(2,1,2);
         xlabel("t (milliseconds)");
         ylabel("PID output (PWM value)");
-        axis([-time/2 time 0 300]); % scale axis the same as subplot 1
-        plot(t, output); % plot the output
+        plot(t_neg, [zeros(1, round((time/2)/period)) output]); % plot the output
         legend('PWM output', 'Location', 'west');
         
     end
